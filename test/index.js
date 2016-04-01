@@ -4,7 +4,4 @@ require("./helper");
 require("./parse-input");
 require("./date-parsers");
 require("./date-frequencies");
-require("./timezone-adjustments");
 require("./auto-date-interval");
-require("./validate-input");
-require("./catch-chart-mistakes");

@@ -6,7 +6,7 @@
 */
 
 var React = require("react");
-var ReactDOM = require("react-dom");
+var ReactDOM = require("react-dom")
 var PropTypes = React.PropTypes;
 
 var assign = require("lodash/assign");
@@ -49,15 +49,11 @@ var RendererWrapper = React.createClass({
 		}),
 		width: PropTypes.number,
 		enableResponsive: PropTypes.bool,
-		showMetadata: PropTypes.bool,
-		className: PropTypes.string,
-		svgClassName: PropTypes.string
+		showMetadata: PropTypes.bool
 	},
 
 	shouldComponentUpdate: function(nextProps, nextState) {
-		if (!nextProps.model.errors) {
-			return true;
-		} else if (!nextProps.model.errors.valid) {
+		if (!nextProps.model.chartProps.input.valid) {
 			return false;
 		}
 		return true;
@@ -106,6 +102,7 @@ var RendererWrapper = React.createClass({
 			_chartProps.data = newData;
 			chartProps = _chartProps;
 		}
+
 		var state = assign({}, { chartProps: chartProps }, size_calcs);
 		this.setState(state);
 	},
@@ -184,7 +181,6 @@ var RendererWrapper = React.createClass({
 		var chartType = this.props.model.metadata.chartType;
 		var width = this.props.width || this.state.domNodeWidth;
 		var displayConfig = this.state.chartConfig.display;
-		var svgClassName = this.props.svgClassName || '';
 
 		if (!width) {
 			return <div style={{ width: "100%" }}></div>;
@@ -247,6 +243,7 @@ var RendererWrapper = React.createClass({
 		var margin = this.state.chartConfig.display.margin;
 		var metadataSvg = [];
 		var title;
+		var sub;
 
 		var translate = {
 			top: margin.top,
@@ -269,6 +266,19 @@ var RendererWrapper = React.createClass({
 				metadataSvg.push(title);
 			}
 
+			if (metadata.sub && metadata.sub !== "") {
+				sub = (
+					<SvgText
+						text={metadata.sub}
+						key="sub"
+						translate={[translate.left + 2, translate.top + 26]}
+						align="top"
+						className="svg-text-sub"
+					/>
+				);
+				metadataSvg.push(sub);
+			}
+
 			metadataSvg.push(
 				<ChartFooter
 					metadata={metadata}
@@ -281,11 +291,12 @@ var RendererWrapper = React.createClass({
 				/>
 			);
 		}
+
 		return (
 			<div className={["renderer-wrapper", this.state.svgSizeClass, this.props.className].join(" ")}>
 				<svg
 					key={chartType}
-					className={["renderer-svg", svgClassName].join(" ")}
+					className="renderer-svg"
 					width={dimensions.width}
 					height={dimensions.height}
 				>

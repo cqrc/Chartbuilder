@@ -13,7 +13,6 @@ var PropTypes = React.PropTypes;
 var ChartPropertiesStore = require("../stores/ChartPropertiesStore");
 var ChartMetadataStore = require("../stores/ChartMetadataStore");
 var SessionStore = require("../stores/SessionStore");
-var ErrorStore = require("../stores/ErrorStore");
 
 /*
  * Global React components that are used irrespective of chart type
@@ -25,8 +24,6 @@ var ChartMetadata = require("./ChartMetadata.jsx");
 var ChartTypeSelector = require("./ChartTypeSelector.jsx");
 var RendererWrapper = require("./RendererWrapper.jsx");
 var LocalStorageTimer = require("./LocalStorageTimer.jsx");
-
-var AlertGroup = require("chartbuilder-ui").AlertGroup;
 
 var svgWrapperClassName = {
 	desktop: "renderer-svg-desktop",
@@ -51,7 +48,6 @@ function getStateFromStores() {
 	return {
 		chartProps: ChartPropertiesStore.getAll(),
 		metadata: ChartMetadataStore.getAll(),
-		errors: ErrorStore.getAll(),
 		session: SessionStore.getAll()
 	};
 }
@@ -64,7 +60,6 @@ function getStateFromStores() {
  * @property {boolean} showMobilePreview - Show mobile preview underneath default chart
  * @property {function} onStateChange - Callback when state is changed
  * @property {Object} additionalComponents - Optional additional React components
- * @property {string} renderedSVGClassName - Optional class name for chart SVG class
  * @example
  * var React = require("react");
  * var Chartbuilder = require("./components/Chartbuilder.jsx");
@@ -87,8 +82,7 @@ var Chartbuilder = React.createClass({
 		additionalComponents: PropTypes.shape({
 			metadata: PropTypes.array,
 			misc: PropTypes.object
-		}),
-		renderedSVGClassName: React.PropTypes.string
+		})
 	},
 
 	getInitialState: function() {
@@ -109,7 +103,6 @@ var Chartbuilder = React.createClass({
 	componentDidMount: function() {
 		ChartPropertiesStore.addChangeListener(this._onChange);
 		ChartMetadataStore.addChangeListener(this._onChange);
-		ErrorStore.addChangeListener(this._onChange);
 		SessionStore.addChangeListener(this._onChange);
 	},
 
@@ -117,23 +110,7 @@ var Chartbuilder = React.createClass({
 	componentWillUnmount: function() {
 		ChartPropertiesStore.removeChangeListener(this._onChange);
 		ChartMetadataStore.removeChangeListener(this._onChange);
-		ErrorStore.removeChangeListener(this._onChange);
 		SessionStore.removeChangeListener(this._onChange);
-	},
-
-	_renderErrors: function() {
-		if (this.state.errors.messages.length === 0) {
-			return null;
-		} else {
-			return (
-				<div>
-					<h2>Have a look at these issues:</h2>
-					<AlertGroup
-						alerts={this.state.errors.messages}
-					/>
-				</div>
-			);
-		}
 	},
 
 	/*
@@ -152,14 +129,13 @@ var Chartbuilder = React.createClass({
 			mobileOverrides = (
 				<MobileComponent
 					chartProps={this.state.chartProps}
-					errors={this.state.errors}
 				/>
 			);
 		} else {
 			mobileOverrides = null;
 		}
 
-		var editorSteps = Editor.defaultProps.numSteps + (this.state.chartProps.hasDate || this.state.chartProps.isNumeric ? 1 : 0);
+		var editorSteps = Editor.defaultProps.numSteps;
 		var mobilePreview;
 
 		// Mobile preview of the chart, if told to render
@@ -174,7 +150,6 @@ var Chartbuilder = React.createClass({
 								model={this.state}
 								enableResponsive={true}
 								className={svgWrapperClassName.mobile}
-								svgClassName={this.props.renderedSVGClassName}
 							/>
 							<div></div>
 						</div>
@@ -183,6 +158,7 @@ var Chartbuilder = React.createClass({
 				</div>
 			);
 		}
+
 		return (
 			<div className="chartbuilder-main">
 				<div className="chartbuilder-renderer">
@@ -194,7 +170,6 @@ var Chartbuilder = React.createClass({
 							width={640}
 							showMetadata={true}
 							className={svgWrapperClassName.desktop}
-							svgClassName={this.props.renderedSVGClassName}
 						/>
 					</div>
 					{mobilePreview}
@@ -208,8 +183,6 @@ var Chartbuilder = React.createClass({
 						timerOn={this.state.session.timerOn}
 					/>
 					<Editor
-						errors={this.state.errors}
-						session={this.state.session}
 						chartProps={this.state.chartProps}
 						numColors={numColors}
 					/>
@@ -220,10 +193,8 @@ var Chartbuilder = React.createClass({
 						additionalComponents={this.props.additionalComponents.metadata}
 					/>
 					{mobileOverrides}
-					{this._renderErrors()}
 					<ChartExport
 						data={this.state.chartProps.data}
-						enableJSONExport={this.props.enableJSONExport}
 						svgWrapperClassName={svgWrapperClassName.desktop}
 						metadata={this.state.metadata}
 						stepNumber={String(editorSteps + 3)}

@@ -1,11 +1,11 @@
-$header-height = 3em
+$header-height = 2.7em
 $chart-area-width = 640px
 $chart-area-padding = 20px
 
 // Page layout setup
 
 html, body
-	min-width 200px
+	min-width 290px
 	color $color-body-text
 	max-width 100%
 	overflow-x none
@@ -76,13 +76,8 @@ textarea, input, select
 	margin-bottom 1em
 	color #666
 	border 1px solid #ccc
-	border-radius 0
 	font-family $primary-font-family
 	background-color #fff
-
-textarea, input
-	appearance none
-
 
 textarea:focus,
 select:focus,
@@ -103,9 +98,6 @@ canvas
 
 .clearfix
 	clear both
-	
-*
-	-ms-overflow-style none
 
 /**
 * Layout
@@ -125,6 +117,7 @@ canvas
 		margin 0
 		line-height 1
 		padding 0
+		font-family $font-sans-bold
 
 .chartbuilder-container
 	margin-top $header-height + 0.75
@@ -138,7 +131,6 @@ canvas
 	overflow-y scroll
 	overflow-x hidden
 	height 100%
-	max-width 100%
 	position fixed
 	margin-top $chart-area-padding
 	.desktop
@@ -182,26 +174,4 @@ canvas
 	padding 0 10px
 	min-width 100px
 	@import 'chart-editor.styl'
-	
-@media screen and (max-width: $single_column_breakpoint)
-	.header
-		position relative
-	.chartbuilder-container
-		margin-top 10px
-	.chartbuilder-renderer
-		display block
-		position relative
-		margin-top 10px
-		width 100%
-		top 0
-		overflow-x scroll
-		.desktop
-			margin-left auto
-			margin-right auto
-	.chartbuilder-editor
-		margin-top 20px
-		box-sizing border-box
-		margin-left 0
-		display block
-		width 100%
 

@@ -22,7 +22,7 @@ div.renderer-wrapper
 svg
   &.renderer-svg
     fill $color-bg
-    font-family $font-sans-light
+    font-family $font-sans
     text-rendering optimizeLegibility
     box-sizing border-box
     .svg-background
@@ -33,13 +33,9 @@ svg
 
 .d4
   font-size $em_size
-  .leftAxis path.domain
-    display none
-  .xAxis path.domain
-    display none
   .axis
     .tick
-      font-family $font-sans-light
+      font-family $font-sans
       &[data-anchor="middle"]
         text
           text-anchor middle
@@ -47,6 +43,7 @@ svg
         fill $color-chart-axis-text
         shape-rendering crispEdges
         text-anchor middle
+        font-size $em_size_small
       &:first-child
         text
           text-anchor middle
@@ -76,10 +73,9 @@ svg
       .tick:first-child
         text
           text-anchor start
-  .xAxislabel
-    fill $color-chart-axis-text
+
   .concealer-label
-    font-family $font-sans-light
+    font-family $font-sans
     text
       fill $color-chart-axis-text
     rect
@@ -101,7 +97,7 @@ svg
         stroke-linecap round
         stroke-linejoin round
     .label
-      font-family $font-sans-light
+      font-family $font-sans
 
   .column-label
     fill $color-chart-axis-text
@@ -113,36 +109,42 @@ svg
     shape-rendering crispEdges
 
 .svg-text
-  font-family $font-sans-light
+  font-family $font-sans
   font-size $em_size
-
+  
   tspan
     &.em
       font-style italic
-
+      
     &.strong
       font-family $font-sans-bold
-
+      
     &.strong .em, &.em .strong
       font-family $font-sans-bold
       font-style italic
 
-  &.svg-text-credit
+  &.svg-text-credit // Customize credit text
     font-size $em_size*0.6
     fill $color-chart-meta
     text-anchor start
-  &.svg-text-source
+    text-transform uppercase
+  &.svg-text-source // Customize source text
     font-size $em_size*0.6
     fill $color-chart-meta
+    text-transform uppercase
     //text
       //dominant-baseline central
     &.left
       text-anchor start
     &.right
       text-anchor end
-  &.svg-text-title
-    fill $color-body-text
+  &.svg-text-sub // Customize sub text
+    fill $color-chart-axis-text
     font-family $font-sans
+    font-size $em_size
+  &.svg-text-title // Customize title text
+    fill $color-chart-title-text
+    font-family $font-serif-bold
     font-size $em_size
 
 .svg-source-pipe
@@ -152,9 +154,9 @@ svg
 
 .svg-label-text
   font-size $em_size
-  font-family $font-sans-light
-  &.draggable
-    cursor move
+  font-family $font-sans
+  font-weight bold
+  cursor move
 
 .crosshair
   line
@@ -164,6 +166,8 @@ svg
 
 .hidden-svg
   visibility hidden
+
+// Size specific customizations
 
 .medium
   .em-size

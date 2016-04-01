@@ -7,7 +7,6 @@ var React = require("react");
 var ReactDOM = require("react-dom");
 var PureRenderMixin = require("react-addons-pure-render-mixin");
 var isEqual = require("lodash/isEqual");
-var assign = require("lodash/assign");
 var PropTypes = React.PropTypes;
 var d3 = require("d3");
 
@@ -57,54 +56,49 @@ var SvgRectLabel = React.createClass({
 	},
 
 	getInitialState: function() {
-		return assign({
+		return {
 			dragging: false,
 			origin: { x: 0, y: 0 },
-			values: { x: 0, y: 0 }
-		}, this._computeNewState(this.props));
+			element: { x: 0, y: 0 },
+			proportionalComputed: { x: 0, y: 0 },
+			valueComputed: {x: 0, y: 0},
+			values: {x: 0, y: 0},
+			yScale: d3.scale.linear()
+				.domain(this.props.scale.y.domain)
+				.range(this.props.scale.y.range),
+			xScale: d3.time.scale()
+				.domain(this.props.scale.x.domain)
+				.range(this.props.scale.x.range)
+		};
 	},
 
 	shouldComponentUpdate: function(nextProps, nextState) {
 		var newProps = (!isEqual(this.props, nextProps));
 		var newDrag = (this.state.dragging !== nextState.dragging);
-		var hasValCoords = (nextProps.settings.val_x && nextProps.settings.val_y);
-
-		return (newProps || newDrag || nextState.dragging || hasValCoords);
+		return (newProps || newDrag || nextState.dragging);
 	},
 
 	componentWillReceiveProps: function(nextProps) {
-		var newState = this._computeNewState(nextProps);
-		this.setState(newState);
-	},
-
-	_computeNewState: function(props) {
-		var yScale = d3.scale.linear()
-			.domain(props.scale.y.domain)
-			.range(props.scale.y.range);
-
-		var xScale = d3.scale.linear()
-			.domain(props.scale.x.domain)
-			.range(props.scale.x.range);
-
-		var proportionalComputedPos = this._fromPropotionalPostion(props.settings, props);
-
-		var valueComputedPos = this._fromValuePosition({
-			x: props.settings.val_x,
-			y: props.settings.val_y
-		}, xScale, yScale);
-
+		var proportionalComputedPos = this._fromPropotionalPostion(nextProps.settings,nextProps);
+		var valueComputedPos = this._fromValuePosition({x:nextProps.settings.val_x, y:nextProps.settings.val_y});
 		var elementPos = {
 			x: valueComputedPos.x || proportionalComputedPos.x,
 			y: valueComputedPos.y || proportionalComputedPos.y
-		};
+		}
 
-		return {
+		this.setState({
 			proportionalComputed: proportionalComputedPos,
 			valueComputed: valueComputedPos,
 			element: elementPos,
-			yScale: yScale,
-			xScale: xScale
-		}
+			yScale: this.state.yScale
+				.domain(nextProps.scale.y.domain)
+				.range(nextProps.scale.y.range),
+			xScale: this.state.xScale
+				.domain(nextProps.scale.x.domain)
+				.range(nextProps.scale.x.range),
+
+			});
+
 	},
 
 	_getSVGParent: function(el) {
@@ -161,6 +155,8 @@ var SvgRectLabel = React.createClass({
 			valueComputed : this._toValuePosition({x: this.props.settings.val_x, y:this.props.settings.val_y})
 		});
 
+
+
 		e.stopPropagation();
 		e.preventDefault();
 	},
@@ -192,26 +188,20 @@ var SvgRectLabel = React.createClass({
 
 	_onMouseUp: function(e) {
 		this.setState({ dragging: false });
-		this._refreshPosition();
+		var pos = this._toProportionalPosition(this.state.element);
+		var vals = this._toValuePosition(this.state.element)
+		this._updatePosition({
+			name: this.props.text,
+			x: pos.x,
+			y: pos.y,
+			val_y: vals.y,
+			val_x: vals.x,
+			dragged: true
+		});
+
 
 		e.stopPropagation();
 		e.preventDefault();
-	},
-
-	_refreshPosition: function(){
-		if(this.props.settings.dragged) {
-			var pos = this._toProportionalPosition(this.state.element);
-			var vals = this._toValuePosition(this.state.element);
-			this._updatePosition({
-				name: this.props.text,
-				x: pos.x,
-				y: pos.y,
-				val_y: vals.y,
-				val_x: vals.x,
-				dragged: true
-			});
-		}
-
 	},
 
 	_updatePosition: function(posObj) {
@@ -264,7 +254,7 @@ var SvgRectLabel = React.createClass({
 
 
 		return {
-			x: pos.x !== 0 ? xScale.invert(pos.x+this.props.offset.x):null,
+			x: pos.y !== 0 ? xScale.invert(pos.x+this.props.offset.x):null,
 			y: pos.y !== 0 ? yScale.invert(pos.y+this.props.offset.y):null
 		};
 	},
@@ -467,13 +457,6 @@ var SvgRectLabel = React.createClass({
 			</g>
 		}
 
-		var handleMouseDown = null;
-		var draggableClass = "";
-		if (this.props.editable) {
-			handleMouseDown = this._onMouseDown;
-			draggableClass = "draggable";
-		}
-
 		return (
 			<g
 				className="svg-label-g"
@@ -481,16 +464,17 @@ var SvgRectLabel = React.createClass({
 			>
 				{rect}
 				<text
-					className={["svg-label-text", colorClass, draggableClass].join(" ")}
+					className={["svg-label-text", colorClass].join(" ")}
 					x={textOffsetX}
 					y={textOffsetY}
 					dy={dy}
 					draggable={this.props.editable}
-					onMouseDown={handleMouseDown}
+					onMouseDown={this._onMouseDown}
 				>
 					{this.props.text}
 				</text>
 				{crosshair}
+
 			</g>
 		);
 	}

@@ -2,45 +2,29 @@
 // to prevent drawing and give error messages.
 
 var map = require("lodash/map");
-var max = require("lodash/max");
 var filter = require("lodash/filter");
 var some = require("lodash/some");
-var unique = require("lodash/uniq");
-var catchChartMistakes = require("./catch-chart-mistakes");
 
-types = {
-	"number": "numeric",
-	"object": "date",
-	"string": "ordinal"
-};
+function makeInputObj(rawInput, status, isValid) {
+	return {
+		raw: rawInput,
+		status: status,
+		valid: isValid
+	};
+}
 
-var MAX_BYTES = 400000; // Max 400k for chartProps
-
-function validateDataInput(chartProps) {
-	var input = chartProps.input.raw;
-	var series = chartProps.data;
-	var hasDate = chartProps.scale.hasDate;
-	var isNumeric = chartProps.scale.isNumeric;
-	var type = chartProps.input.type;
-	var scale = chartProps.scale;
-
-	var inputErrors = [];
-
-	// Check whether we have input
+function validateDataInput(input, series, hasDate) {
 	if (input.length === 0) {
-		inputErrors.push("EMPTY");
-		return inputErrors;
-	}
-
-	if (series.length && !series[0].values[0].entry) {
-		// Check that we have at least 1 value col (i.e. minimum header + 1 data col)
-		inputErrors.push("TOO_FEW_SERIES");
+		// Check whether we have input
+		return makeInputObj(input, "EMPTY", false);
+	} else if (series.length && !series[0].values.length) {
+		// Check that we have at least 1 value row (i.e. minimum header + 1 data row)
+		return makeInputObj(input, "TOO_FEW_SERIES", false);
 	} else if (series.length > 12) {
 		// Check whether there are too many series
-		inputErrors.push("TOO_MANY_SERIES");
+		return makeInputObj(input, "TOO_MANY_SERIES", false);
 	}
 
-	// Whether a column has a different number of values
 	var unevenSeries = dataPointTest(
 			series,
 			function(val) { return val.value !== null ? (val.value === undefined || val.value.length === 0) : false;},
@@ -48,98 +32,37 @@ function validateDataInput(chartProps) {
 		);
 
 	if (unevenSeries) {
-		inputErrors.push("UNEVEN_SERIES");
+		return makeInputObj(input, "UNEVEN_SERIES", false);
 	}
 
-	// Whether a column has something that is NaN but is not nothing (blank) or `null`
-	var nanSeries = somePointTest(
+	var nanSeries = dataPointTest(
 			series,
-			function(val) {
-				return (isNaN(val.value) && val.value !== undefined && val.value !== "");
-			}
+			function(val) { return isNaN(val.value);},
+			function(nan,vals) { return nan.length > 0;}
 		);
 
 	if (nanSeries) {
-		inputErrors.push("NAN_VALUES");
+		return makeInputObj(input, "NAN_VALUES", false);
 	}
 
-	// Are there multiple types of axis entries
-	var entryTypes = unique(series[0].values.map(function(d){return typeof d.entry;}));
-	if(entryTypes.length > 1 && !chartProps.input.type) {
-		inputErrors.push("CANT_AUTO_TYPE");
-	}
-
-	//Whether an entry column that is supposed to be a Number is not in fact a number
-	if(isNumeric || chartProps.input.type == "numeric") {
-		var badNumSeries = somePointTest(
+	if(hasDate) {
+		var badDateSeries = dataPointTest(
 				series,
-				function(val) { return isNaN(val.entry); }
-			);
-
-		if (badNumSeries) {
-			inputErrors.push("NAN_VALUES");
-		}
-	}
-
-	// Whether an entry column that is supposed to be a date is not in fact a date
-	if(hasDate || chartProps.input.type == "date") {
-		var badDateSeries = somePointTest(
-				series,
-				function(val) { return !val.entry.getTime || isNaN(val.entry.getTime()); },
+				function(val) {return isNaN(val.entry.getTime());},
 				function(bd,vals) { return bd.length > 0;}
 			);
 
 		if (badDateSeries) {
-			inputErrors.push("NOT_DATES");
-		}
-
-		var tz_pattern = /([+-]\d\d:*\d\d)/gi;
-		var found_timezones = input.match(tz_pattern);
-		if(found_timezones && found_timezones.length != series[0].values.length) {
-			inputErrors.push("UNEVEN_TZ");
+			return makeInputObj(input, "NOT_DATES", false);
 		}
 	}
 
-	// Whether a column has numbers that should be divided
-	var largeNumbers = somePointTest(
-			series,
-			function(val) { return Math.floor(val.value).toString().length > 4; },
-			function(largeNums, vals) { return largeNums.length > 0;}
-		);
-
-	if (largeNumbers) {
-		inputErrors.push("LARGE_NUMBERS");
-	}
-
-	// Whether the number of bytes in chartProps exceeds our defined maximum
-	if (catchChartMistakes.tooMuchData(chartProps)) {
-		inputErrors.push("TOO_MUCH_DATA");
-	}
-
-	// Whether axis ticks divide evenly
-	if (!catchChartMistakes.axisTicksEven(scale.primaryScale)) {
-		inputErrors.push("UNEVEN_TICKS");
-	}
-
-	// Whether axis is missing pref and suf
-	if (catchChartMistakes.noPrefixSuffix(scale.primaryScale)) {
-		inputErrors.push("NO_PREFIX_SUFFIX");
-	}
-
-	return inputErrors;
-
+	// If we make it here, input is valid
+	return makeInputObj(input, "VALID", true);
 }
 
-// Func that checks wheter a single data point failes a test.
-// Will return as soon as failure is found
-function somePointTest(series, someTest) {
-	return some(series, function(s) {
-		return some(s.values, someTest);
-	});
-}
-
-// Func that checks wheter all data points pass a test
 function dataPointTest(series, filterTest, someTest) {
+	// A function to systemitize looping through every datapoint
 	var vals = map(series, function(d,i) {
 		return filter(d.values, filterTest);
 	});

@@ -1,0 +1,1 @@
+var chart_style={overtick_top:"0.8em",overtick_bottom:10,numColors:11,xOverTick:"1em",creditMargin:"0.6em"};module.exports=chart_style;

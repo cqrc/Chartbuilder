@@ -8,24 +8,15 @@ require("sugar-date");
 // Parse dates and return strings based on selected format
 var dateParsers = {
 
-	"lmdy": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"lmdy": function(d) {
 		return d.format('{M}/{d}/{yy}');
 	},
 
-	"mmdd": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"mmdd": function(d) {
 		return d.format('{M}/{d}');
 	},
 
-	"Mdd": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"Mdd": function(d) {
 		var month = d.getMonth() + 1;
 		if (month == 5) {
 			return d.format('{Month} {d}');
@@ -34,10 +25,7 @@ var dateParsers = {
 		}
 	},
 
-	"M1d": function(d,i,o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"M1d": function(d,i) {
 		var date = d.getDate();
 		if(date == 1) {
 			return dateParsers.M(d);
@@ -48,10 +36,7 @@ var dateParsers = {
 		}
 	},
 
-	"ddM": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"ddM": function(d) {
 		var month = d.getMonth() + 1;
 		if (month == 5) {
 			return d.format('{d} {Month}');
@@ -60,31 +45,19 @@ var dateParsers = {
 		}
 	},
 
-	"mmyy": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"mmyy": function(d) {
 		return d.format('{M}/' + dateParsers.yyyy(d).slice(-2));
 	},
 
-	"yy": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"yy": function(d) {
 		return "’" + dateParsers.yyyy(d).slice(-2);
 	},
 
-	"yyyy": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"yyyy": function(d) {
 		return "" + d.getFullYear();
 	},
 
-	"MM": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"MM": function(d) {
 		var month = d.getMonth() + 1;
 		if (month == 1) {
 			return "" + d.getFullYear();
@@ -93,10 +66,7 @@ var dateParsers = {
 		}
 	},
 
-	"M": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"M": function(d) {
 		var month = d.getMonth() + 1;
 		if (month == 1) {
 			return "’" + dateParsers.yyyy(d).slice(-2);
@@ -107,24 +77,15 @@ var dateParsers = {
 		}
 	},
 
-	"hmm": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"hmm": function(d) {
 		return d.format("{h}:{mm}");
 	},
 
-	"h": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"h": function(d) {
 		return d.format("{h}{tt}");
 	},
 
-	"QJan": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"QJan": function(d) {
 		var year = d.getFullYear();
 		var month = d.getMonth() + 1;
 		var day = d.getDate();
@@ -142,10 +103,7 @@ var dateParsers = {
 		return "";
 	},
 
-	"QJul": function(d, i, o) {
-		if(o) {
-			d.addMinutes(o)
-		}
+	"QJul": function(d) {
 		var year = d.getFullYear();
 		var month = d.getMonth() + 1;
 		var day = d.getDate();

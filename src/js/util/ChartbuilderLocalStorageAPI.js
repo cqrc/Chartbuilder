@@ -9,9 +9,10 @@ module.exports = {
 	defaultChart: function() {
 		var default_model = chartConfig.xy.defaultProps;
 		default_model.chartProps.input = {
-			raw: defaultInput
+			raw: defaultInput,
+			status: "VALID",
+			valid: true
 		};
-
 		ChartServerActions.receiveModel(default_model);
 	},
 

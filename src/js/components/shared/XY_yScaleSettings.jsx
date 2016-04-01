@@ -6,7 +6,6 @@ var ScaleReset = require("./ScaleReset.jsx");
 
 /* Chartbuilder UI components */
 var chartbuilderUI = require("chartbuilder-ui");
-var AlertGroup = chartbuilderUI.AlertGroup;
 var LabelledTangle = chartbuilderUI.LabelledTangle;
 var TextInput = chartbuilderUI.TextInput;
 
@@ -26,8 +25,7 @@ var XY_yScaleSettings = React.createClass({
 		onUpdate: PropTypes.func.isRequired,
 		scale: PropTypes.object.isRequired,
 		stepNumber: PropTypes.string,
-		titleOverride: PropTypes.string,
-		errors: PropTypes.array
+		titleOverride: PropTypes.string
 	},
 
 	_handleScaleUpdate: function(k, v) {
@@ -52,24 +50,8 @@ var XY_yScaleSettings = React.createClass({
 		this.props.onUpdate(scale);
 	},
 
-	_renderErrors: function() {
-
-		if (!this.props.errors) {
-			return null;
-		} else if (this.props.errors.length === 0) {
-			return null;
-		} else {
-			return (
-				<div className="error-display">
-					<AlertGroup alerts={this.props.errors} />
-				</div>
-			);
-		}
-	},
-
 	render: function() {
 		var currScale = this.props.scale[this.props.id];
-		var errors = this._renderErrors();
 
 		/*
 		 * Figure out the amount by which to increment the tangle (drag) values: Eg
@@ -109,14 +91,14 @@ var XY_yScaleSettings = React.createClass({
 				<span className="step-number">{this.props.stepNumber}</span>
 				{this.props.titleOverride ? this.props.titleOverride : "Configure the " + this.props.name + " axis"}
 			</h2>
-			);
+			)
 
-		if (this.props.stepNumber === "") {
+		if(this.props.stepNumber == "") {
 			title_block = (
 				<h2 className="scale-option-title">
 					{this.props.titleOverride ? this.props.titleOverride : "Configure the " + this.props.name + " axis"}
 				</h2>
-				);
+				)
 		}
 
 		return (
@@ -172,7 +154,6 @@ var XY_yScaleSettings = React.createClass({
 						className="scale-reset"
 					/>
 				</div>
-				{errors}
 			</div>
 		);
 	}
